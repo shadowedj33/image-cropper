@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Image Cropper</title>
+  <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.min.css" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+    img {
+      max-width: 100%;
+      margin-top: 10px;
+    }
+    #image {
+      max-height: 500px;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload and Crop Image</h2>
+  <input type="file" id="inputImage" accept="image/*" />
+  <br />
+  <img id="image" style="display: none;" />
+  <br />
+  <button onclick="downloadCropped()">Download Cropped Image</button>
+
+  <script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
+  <script>
+    let cropper;
+    const input = document.getElementById('inputImage');
+    const image = document.getElementById('image');
+
+    input.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function () {
+          image.src = reader.result;
+          image.style.display = 'block';
+          if (cropper) cropper.destroy();
+          cropper = new Cropper(image, {
+            aspectRatio: NaN,
+          });
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function downloadCropped() {
+      if (!cropper) return alert("Upload and crop an image first.");
+      const canvas = cropper.getCroppedCanvas();
+      const link = document.createElement('a');
+      link.href = canvas.toDataURL('image/png');
+      link.download = 'cropped-image.png';
+      link.click();
+    }
+  </script>
+</body>
+</html>
