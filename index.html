@@ -3,99 +3,68 @@
 <head>
   <meta charset="UTF-8" />
   <title>Image Cropper</title>
-  <link href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet"/>
+  <link href="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.css" rel="stylesheet" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
+      font-family: sans-serif;
       text-align: center;
+      padding: 30px;
     }
-
-    input[type="file"] {
-      margin-bottom: 20px;
-    }
-
-    #image-container {
-      max-width: 100%;
-      max-height: 500px;
-      margin-bottom: 20px;
-    }
-
     #image {
-      max-width: 100%;
-      display: block;
-      margin: 0 auto;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    #download-btn {
+      max-width: 90%;
       display: none;
+      margin-top: 20px;
+    }
+    button {
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h2>📷 Upload and Crop Your Image</h2>
-  <input type="file" id="inputImage" accept="image/*" />
 
-  <div id="image-container">
-    <img id="image" src="" />
-  </div>
+  <h2>Upload and Crop an Image</h2>
+  <input type="file" id="inputImage" accept="image/*">
+  <br>
+  <img id="image" />
+  <br>
+  <button id="downloadBtn" style="display:none;">Download Cropped Image</button>
 
-  <button id="download-btn" onclick="downloadCropped()">Download Cropped Image</button>
+  <script src="https://unpkg.com/cropperjs@1.5.13/dist/cropper.min.js"></script>
 
-  <script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
   <script>
     let cropper;
     const inputImage = document.getElementById('inputImage');
     const image = document.getElementById('image');
-    const downloadBtn = document.getElementById('download-btn');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-    inputImage.addEventListener('change', function (event) {
+    inputImage.addEventListener('change', (event) => {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
       reader.onload = function (e) {
         image.src = e.target.result;
-        downloadBtn.style.display = 'none';
+        image.style.display = 'block';
       };
       reader.readAsDataURL(file);
     });
 
-    image.addEventListener('load', function () {
+    image.onload = function () {
       if (cropper) cropper.destroy();
       cropper = new Cropper(image, {
-        aspectRatio: NaN,
         viewMode: 1,
-        autoCropArea: 1,
-        responsive: true,
-        background: false
+        autoCropArea: 1
       });
       downloadBtn.style.display = 'inline-block';
-    });
+    };
 
-    function downloadCropped() {
-      if (!cropper) {
-        alert("Cropper not initialized.");
-        return;
-      }
-
+    downloadBtn.addEventListener('click', () => {
       const canvas = cropper.getCroppedCanvas();
-      if (!canvas) {
-        alert("Could not crop image.");
-        return;
-      }
-
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
       link.download = 'cropped-image.png';
       link.click();
-    }
+    });
   </script>
 </body>
 </html>
