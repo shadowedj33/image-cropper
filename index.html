@@ -38,31 +38,41 @@
     let cropper;
     const input = document.getElementById('inputImage');
     const image = document.getElementById('image');
-
+  
     input.addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
         reader.onload = function () {
           image.src = reader.result;
+          image.onload = function () {
+            // Wait for image to load before initializing cropper
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(image, {
+              aspectRatio: NaN, // Freeform
+              viewMode: 1, // Restrict crop box to image boundaries
+              autoCropArea: 0.8, // Start with a big crop area
+              responsive: true,
+              background: true
+            });
+          };
           image.style.display = 'block';
-          if (cropper) cropper.destroy();
-          cropper = new Cropper(image, {
-            aspectRatio: NaN,
-          });
         };
         reader.readAsDataURL(file);
       }
     });
-
+  
     function downloadCropped() {
-      if (!cropper) return alert("Upload and crop an image first.");
-      const canvas = cropper.getCroppedCanvas();
+      if (!cropper) return alert("Please upload and crop an image first.");
+      const canvas = cropper.getCroppedCanvas({
+        fillColor: '#fff' // Optional: white background for JPG export
+      });
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
       link.download = 'cropped-image.png';
       link.click();
     }
   </script>
+
 </body>
 </html>
