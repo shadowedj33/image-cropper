@@ -3,83 +3,94 @@
 <head>
   <meta charset="UTF-8" />
   <title>Image Cropper</title>
-  <link rel="stylesheet" href="https://unpkg.com/cropperjs/dist/cropper.min.css" />
+  <link href="https://unpkg.com/cropperjs/dist/cropper.min.css" rel="stylesheet"/>
   <style>
     body {
       font-family: Arial, sans-serif;
+      padding: 20px;
       text-align: center;
-      margin: 20px;
     }
+
     input[type="file"] {
-      margin-bottom: 10px;
+      margin-bottom: 20px;
     }
-    img {
-      max-width: 90%;
+
+    #image-container {
+      max-width: 100%;
       max-height: 500px;
+      margin-bottom: 20px;
     }
-    #crop-area {
-      display: none;
-      margin-top: 20px;
+
+    #image {
+      max-width: 100%;
+      display: block;
+      margin: 0 auto;
     }
+
     button {
-      margin-top: 15px;
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
+    }
+
+    #download-btn {
+      display: none;
     }
   </style>
 </head>
 <body>
   <h2>📷 Upload and Crop Your Image</h2>
   <input type="file" id="inputImage" accept="image/*" />
-  
-  <div id="crop-area">
-    <img id="image" />
-    <br />
-    <button onclick="downloadCropped()">Download Cropped Image</button>
+
+  <div id="image-container">
+    <img id="image" src="" />
   </div>
+
+  <button id="download-btn" onclick="downloadCropped()">Download Cropped Image</button>
 
   <script src="https://unpkg.com/cropperjs/dist/cropper.min.js"></script>
   <script>
     let cropper;
-    const input = document.getElementById('inputImage');
+    const inputImage = document.getElementById('inputImage');
     const image = document.getElementById('image');
-    const cropArea = document.getElementById('crop-area');
+    const downloadBtn = document.getElementById('download-btn');
 
-    input.addEventListener('change', function (e) {
-      const file = e.target.files[0];
+    inputImage.addEventListener('change', function (event) {
+      const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function () {
-        image.src = reader.result;
-        image.onload = function () {
-          cropArea.style.display = 'block';
-          if (cropper) cropper.destroy();
-          cropper = new Cropper(image, {
-            aspectRatio: NaN,
-            viewMode: 1,
-            autoCropArea: 0.8,
-            movable: true,
-            zoomable: true,
-            rotatable: false,
-            scalable: false
-          });
-        };
+      reader.onload = function (e) {
+        image.src = e.target.result;
+        downloadBtn.style.display = 'none';
       };
       reader.readAsDataURL(file);
     });
 
+    image.addEventListener('load', function () {
+      if (cropper) cropper.destroy();
+      cropper = new Cropper(image, {
+        aspectRatio: NaN,
+        viewMode: 1,
+        autoCropArea: 1,
+        responsive: true,
+        background: false
+      });
+      downloadBtn.style.display = 'inline-block';
+    });
+
     function downloadCropped() {
       if (!cropper) {
-        alert("Please upload and crop an image first.");
+        alert("Cropper not initialized.");
         return;
       }
+
       const canvas = cropper.getCroppedCanvas();
       if (!canvas) {
-        alert("Failed to crop the image.");
+        alert("Could not crop image.");
         return;
       }
+
       const link = document.createElement('a');
       link.href = canvas.toDataURL('image/png');
       link.download = 'cropped-image.png';
